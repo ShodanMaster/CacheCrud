@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Name;
 use Exception;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class NameController extends Controller
 {
@@ -43,9 +44,34 @@ class NameController extends Controller
             ], 200);
 
         }catch(Exception $e){
-
+            return response()->json([
+                'status' => 500,
+                'message' => 'An error occurred while creating the name: ' . $e->getMessage()
+            ], 500);
         }
 
+    }
+
+    public function getNames(Request $request)
+    {
+        $names = Name::all();
+
+        if($request->ajax()){
+            return DataTables::of($names)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $btn = '
+                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
+                                Edit
+                            </button>
+
+                            <button type="button" class="btn btn-danger btn-sm deleteName" data-id="'.$row->id.'">Delete</button>
+                        ';
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
     }
 
     /**
@@ -77,6 +103,18 @@ class NameController extends Controller
      */
     public function destroy(Name $name)
     {
-        //
+        try {
+            $name->delete();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Name deleted successfully!'
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'An error occurred while deleting the name: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
