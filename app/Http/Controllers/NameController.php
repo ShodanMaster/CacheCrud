@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Name;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Yajra\DataTables\DataTables;
 
 class NameController extends Controller
@@ -36,7 +37,8 @@ class NameController extends Controller
                 'name' => 'required|string|max:255',
             ]);
 
-            Name::create($request->all());
+            Name::create($request->only('name'));
+            Cache::forget('names_data_table');
 
             return response()->json([
                 'status' => 200,
@@ -54,9 +56,14 @@ class NameController extends Controller
 
     public function getNames(Request $request)
     {
-        $names = Name::all();
-
         if($request->ajax()){
+            // $names = Name::all();
+            $cacheKey = 'names_data_table';
+
+            $names = Cache::remember($cacheKey, now()->addMinutes(5), function () {
+                return Name::all();
+            });
+
             return DataTables::of($names)
                 ->addIndexColumn()
                 ->addColumn('action', function($row){
@@ -99,7 +106,8 @@ class NameController extends Controller
                 'name' => 'required|string|max:255',
             ]);
 
-            $name->update($request->all());
+            $name->update($request->only('name'));
+            Cache::forget('names_data_table');
 
             return response()->json([
                 'status' => 200,
@@ -121,6 +129,7 @@ class NameController extends Controller
     {
         try {
             $name->delete();
+            Cache::forget('names_data_table');
 
             return response()->json([
                 'status' => 200,
