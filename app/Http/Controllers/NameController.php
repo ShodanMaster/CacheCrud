@@ -38,7 +38,7 @@ class NameController extends Controller
             ]);
 
             Name::create($request->only('name'));
-            Cache::forget('names_data_table');
+            Cache::forget('names_table');
 
             return response()->json([
                 'status' => 200,
@@ -58,10 +58,10 @@ class NameController extends Controller
     {
         if($request->ajax()){
             // $names = Name::all();
-            $cacheKey = 'names_data_table';
+            $cacheKey = 'names_table';
 
             $names = Cache::remember($cacheKey, now()->addMinutes(5), function () {
-                return Name::all();
+                return Name::select('id', 'name')->get();
             });
 
             return DataTables::of($names)
@@ -107,7 +107,7 @@ class NameController extends Controller
             ]);
 
             $name->update($request->only('name'));
-            Cache::forget('names_data_table');
+            Cache::forget('names_table');
 
             return response()->json([
                 'status' => 200,
@@ -129,7 +129,7 @@ class NameController extends Controller
     {
         try {
             $name->delete();
-            Cache::forget('names_data_table');
+            Cache::forget('names_table');
 
             return response()->json([
                 'status' => 200,
