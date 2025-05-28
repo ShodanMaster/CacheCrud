@@ -45,6 +45,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editForm">
+                {{-- <input type="hidden" name="id" id="Id"> --}}
                 <div class="modal-body">
                     <div class="mb-3">
                         <div class="form-group">
@@ -153,8 +154,67 @@
                 });
             });
 
+            $('body').on('click', '.editName', function(e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+
+                $('#ediName').val(name);
+                $('#editForm').data('id', id);
+                $('#editModal').modal('show');
+            });
+
+            $('#editForm').submit(function (e) {
+                e.preventDefault();
+
+                var id = $(this).data('id');
+                var name = $('#ediName').val();
+
+                $.ajax({
+                    url: "name/" + id,
+                    type: "PUT",
+                    data: {
+                        name: name,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        if (response.status === 200) {
+                            Swal.fire({
+                                title: 'Success',
+                                text: 'Name updated successfully!',
+                                icon: 'success',
+                                showConfirmButton: false,
+                                timer: 1500,
+                                timerProgressBar: true
+                            });
+                            table.ajax.reload();
+                            $('#editModal').modal('hide');
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.message,
+                                icon: 'error',
+                                showConfirmButton: false,
+                                timer: 1500,
+                                timerProgressBar: true
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseText);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'An error occurred while updating the name.',
+                            icon: 'error',
+                            showConfirmButton: false,
+                            timer: 1500,
+                            timerProgressBar: true
+                        });
+                    }
+                });
+            });
+
             $('body').on('click', '.deleteName', function(e) {
-                console.log('qwerty');
 
                 e.preventDefault();
                 var id = $(this).data('id');

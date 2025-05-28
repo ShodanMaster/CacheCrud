@@ -61,7 +61,7 @@ class NameController extends Controller
                 ->addIndexColumn()
                 ->addColumn('action', function($row){
                     $btn = '
-                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
+                            <button type="button" class="btn btn-info btn-sm editName" data-bs-toggle="modal" data-bs-target="#editModal" data-id="'.$row->id.'" data-name="'.$row->name.'">
                                 Edit
                             </button>
 
@@ -87,7 +87,6 @@ class NameController extends Controller
      */
     public function edit(Name $name)
     {
-        //
     }
 
     /**
@@ -95,7 +94,24 @@ class NameController extends Controller
      */
     public function update(Request $request, Name $name)
     {
-        //
+        try{
+            $request->validate([
+                'name' => 'required|string|max:255',
+            ]);
+
+            $name->update($request->all());
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Name updated successfully!'
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'An error occurred while updating the name: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
